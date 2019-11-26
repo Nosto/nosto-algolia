@@ -1,10 +1,6 @@
-import { getQueryParams } from './helpers'
-
 /**
  * Initialise Nosto
  */
-
-  ;
 
 (function () {
   const name = 'nostojs'
@@ -17,54 +13,35 @@ import { getQueryParams } from './helpers'
 
 nostojs(api => api.setAutoLoad(false))
 
-/**
- * Generates a SHA-256 checksum for the given string. The
- * WebCrypto built-in is only available on modern browsers.
- *
- * @param message {String} the string to be hashed
- * @returns {Promise<string>} a promise with the resultant hash
- */
-async function digestSHA256(message) {
-  // encode as (utf-8) Uint8Array
-  const msgUint8 = new TextEncoder().encode(message)
-  // hash the message
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8)
-  // convert buffer to byte array
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  // convert bytes to hex string
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+const mappingFilters = {
+  top_brands: 'brand',
+  top_categories: 'product_type',
 }
 
-/**
- * Injects the customer-reference into the DOM. This is a
- * workaround since there is no JS API method exposed by Nosto
- * for this
- *
- * @param value {String} the customer-reference to be exposed
- */
-function appendNostoCustomerTagging(value) {
-  const customerTagging = document.createElement('div')
-  customerTagging.className = 'nosto_customer'
-  customerTagging.style = 'display:none'
-
-  const newNode = document.createElement('span')
-  newNode.className = 'customer_reference'
-  newNode.innerHTML = value
-  customerTagging.appendChild(newNode)
-  document.body.appendChild(customerTagging)
+// The function to transform affinityScores to algolia optional filters
+function nostoToOptionalFilters(affinityScores) {
+  return Object.keys(affinityScores).reduce(
+    (acc1, key1) => [
+      ...acc1,
+      ...Object.keys(affinityScores[key1]).reduce(
+        (acc2, key2) => [
+          ...acc2,
+          `${mappingFilters[key1]}:${key2}<score=${Math.round(affinityScores[key1][key2] * 1000)}>`,
+        ],
+        [],
+      ),
+    ],
+    [],
+  )
 }
 
-/**
- * Parse the parameters, hash it, build the reference and reload recommendations
- */
-export default function appendNostoCustomerTag() {
-  const data = getQueryParams('id', 'domain')
-  if (!data.some(el => el === null)) {
-    digestSHA256(data.join('')).then((text) => {
-      appendNostoCustomerTagging(text)
-      nostojs(api => api.loadRecommendations())
-    })
-  } else {
-    console.warn('Nosto: Id or domain param is missing. Cannot append Nosto customer tagging')
-  }
+export default function nostoAlgoliaInit() {
+  let affinityScores
+  nostojs(api =>
+    api.listen('prerender', (data) => {
+      affinityScores = data.affinityScores
+    }),
+  )
+  nostojs(api => api.loadRecommendations())
+  console.debug(nostoToOptionalFilters(affinityScores))
 }
