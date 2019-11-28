@@ -1,0 +1,14 @@
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+"use strict";function getQueryParams(){for(var e=new URLSearchParams(window.location.search),t=arguments.length,r=Array(t),a=0;a<t;a++)r[a]=arguments[a];return r.map(function(t){return e.get(t)})}function loadScript(e,t,r){var a=document.createElement("script");a.type=t,a.setAttribute("async",r),a.src=e,document.getElementsByTagName("head")[0].appendChild(a)}Object.defineProperty(exports,"__esModule",{value:!0}),exports.loadScript=loadScript,exports.getQueryParams=getQueryParams;
+
+},{}],2:[function(require,module,exports){
+"use strict";var _nostoAlgolia=require("./nosto-algolia"),_nostoAlgolia2=_interopRequireDefault(_nostoAlgolia),_nostoScriptLoader=require("./nosto-script-loader"),_nostoScriptLoader2=_interopRequireDefault(_nostoScriptLoader);function _interopRequireDefault(o){return o&&o.__esModule?o:{default:o}}(0,_nostoAlgolia2.default)(),(0,_nostoScriptLoader2.default)();
+
+},{"./nosto-algolia":3,"./nosto-script-loader":4}],3:[function(require,module,exports){
+"use strict";function _toConsumableArray(o){if(Array.isArray(o)){for(var n=0,t=Array(o.length);n<o.length;n++)t[n]=o[n];return t}return Array.from(o)}Object.defineProperty(exports,"__esModule",{value:!0}),exports.default=nostoAlgoliaInit,function(){var o="nostojs";window[o]=window[o]||function(n){(window[o].q=window[o].q||[]).push(n)}}(),nostojs(function(o){return o.setAutoLoad(!1)});var mappingFilters={top_brands:"brand",top_categories:"product_type"};function nostoToOptionalFilters(o){return Object.keys(o).reduce(function(n,t){return[].concat(_toConsumableArray(n),_toConsumableArray(Object.keys(o[t]).reduce(function(n,r){return[].concat(_toConsumableArray(n),[mappingFilters[t]+":"+r+"<score="+Math.round(1e3*o[t][r])+">"])},[])))},[])}function nostoAlgoliaInit(){var o=void 0;nostojs(function(n){return n.listen("prerender",function(n){o=n.affinityScores})}),nostojs(function(o){return o.loadRecommendations()}),console.debug(nostoToOptionalFilters(o))}
+
+},{}],4:[function(require,module,exports){
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.default=appendNostoScript;var _helpers=require("./helpers");function appendNostoScript(){var e=(0,_helpers.getQueryParams)("nosto-merchant-id")[0];if(null!==e){var t="https://connect.nosto.com/include/"+e;(0,_helpers.loadScript)(t,"text/javascript",!0)}else console.warn("Nosto: merchant id is not present. Cannot add the Nosto main script")}
+
+},{"./helpers":1}]},{},[2])
+//# sourceMappingURL=main.map
